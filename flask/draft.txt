@@ -1,0 +1,294 @@
+<!-- {% extends 'base.html' %}
+
+{% block content %}
+  <h2 class="text-center">Dashboard</h2>
+  
+  {% if current_user.role == 'barber' %}
+    <h3>Your Appointments</h3>
+    <ul class="list-group">
+      {% for appointment in appointments %}
+        <li class="list-group-item">
+          Appointment with {{ appointment.customer.username }} on {{ appointment.date_time }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif current_user.role == 'customer' %}
+    <h3>Available Barbers</h3>
+    <ul class="list-group">
+      {% for barber in barbers %}
+        <li class="list-group-item">
+          {{ barber.user.username }}
+          <form method="POST" action="{{ url_for('scheduling.book', barber_id=barber.id) }}">
+            <div class="mb-3">
+              <label for="date_time" class="form-label">Select Appointment Time</label>
+              <input type="datetime-local" class="form-control" name="date_time">
+            </div>
+            <button type="submit" class="btn btn-success">Book Appointment</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %} -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2 class="text-center">Dashboard</h2>
+  
+  <!-- Display user's name and role -->
+  <div class="alert alert-info">
+    Logged in as: <strong>{{ current_user.username }}</strong> ({{ current_user.role }})
+  </div>
+  
+  {% if current_user.role == 'barber' %}
+    <h3>Your Appointments</h3>
+    <ul class="list-group">
+      {% for appointment in appointments %}
+        <li class="list-group-item">
+          Appointment with {{ appointment.customer.username }} on {{ appointment.date_time }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif current_user.role == 'customer' %}
+    <h3>Available Barbers</h3>
+    <ul class="list-group">
+      {% for barber in barbers %}
+        <li class="list-group-item">
+          {{ barber.user.username }}
+          <form method="POST" action="{{ url_for('scheduling.book', barber_id=barber.id) }}">
+            <div class="mb-3">
+              <label for="date_time" class="form-label">Select Appointment Time</label>
+              <input type="datetime-local" class="form-control" name="date_time">
+            </div>
+            <button type="submit" class="btn btn-success">Book Appointment</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}
+---------------------------------------------
+# Scheduling routes
+# @scheduling.route('/dashboard')
+# @login_required
+# def dashboard():
+#     if current_user.role == 'barber':
+#         appointments = Appointment.query.filter_by(barber_id=current_user.id).all()
+#         return render_template('dashboard.html', appointments=appointments)
+#     elif current_user.role == 'customer':
+#         barbers = Barber.query.all()
+#         return render_template('dashboard.html', barbers=barbers)
+--------------------------------------------------
+# from flask.app import db
+# from flask_login import UserMixin
+# from werkzeug.security import generate_password_hash, check_password_hash
+
+# class User(UserMixin, db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     username = db.Column(db.String(150), unique=True, nullable=False)
+#     email = db.Column(db.String(150), unique=True, nullable=False)
+#     password_hash = db.Column(db.String(256), nullable=False)
+#     role = db.Column(db.String(50), nullable=False)  # "customer" or "barber"
+
+#     def set_password(self, password):
+#         self.password_hash = generate_password_hash(password)
+
+#     def check_password(self, password):
+#         return check_password_hash(self.password_hash, password)
+
+# class Barber(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     available_slots = db.Column(db.String(500))  # Simple string for now
+
+#     user = db.relationship('User', backref='barber', lazy=True)
+
+# class Appointment(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     barber_id = db.Column(db.Integer, db.ForeignKey('barber.id'))
+#     customer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     date_time = db.Column(db.DateTime, nullable=False)
+
+#     barber = db.relationship('Barber', backref='appointments', lazy=True)
+#     customer = db.relationship('User', backref='appointments', lazy=True)
+# class User(UserMixin, db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     username = db.Column(db.String(150), unique=True, nullable=False)
+#     email = db.Column(db.String(150), unique=True, nullable=False)
+#     password_hash = db.Column(db.String(256), nullable=False)
+#     role = db.Column(db.String(50), nullable=False)  # "customer" or "barber"
+
+#     def set_password(self, password):
+#         self.password_hash = generate_password_hash(password)
+
+#     def check_password(self, password):
+#         return check_password_hash(self.password_hash, password)
+-------------------------------
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    role = db.Column(db.String(50), nullable=False)  # "customer", "barber", or "admin"
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+
+class Barber(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    available_slots = db.Column(db.String(500))  # Simple string for now
+
+    user = db.relationship("User", backref="barber", lazy=True)
+
+
+class Appointment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    barber_id = db.Column(db.Integer, db.ForeignKey("barber.id"))
+    customer_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    date_time = db.Column(db.DateTime, nullable=False)
+
+    barber = db.relationship("Barber", backref="appointments", lazy=True)
+    customer = db.relationship("User", backref="appointments", lazy=True)
+
+---------------------------
+# @scheduling.route("/book/<int:barber_id>", methods=["POST"])
+# @login_required
+# def book(barber_id):
+#     date_time = request.form["date_time"]  # Assume form data is valid
+#     appointment = Appointment(
+#         barber_id=barber_id, customer_id=current_user.id, date_time=date_time
+#     )
+#     db.session.add(appointment)
+#     db.session.commit()
+#     flash('Appointment booked successfully!', 'success')
+#     return redirect(url_for("scheduling.dashboard"))
+---------------------------------{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Welcome to your dashboard, {{ current_user.username }}!</h2>
+
+  {% if current_user.role == 'barber' %}
+    <h3>Your Appointments</h3>
+    <ul class="list-group">
+      {% for appointment in appointments %}
+        <li class="list-group-item">
+          Appointment with {{ appointment.customer.username }} on {{ appointment.date_time }}
+        </li>
+      {% endfor %}
+    </ul>
+
+  {% elif current_user.role == 'customer' %}
+    <h3>Available Barbers</h3>
+    <ul class="list-group">
+      {% for barber in barbers %}
+        <li class="list-group-item">
+          {{ barber.user.username }}
+          <form method="POST" action="{{ url_for('scheduling.book', barber_id=barber.id) }}">
+            <div class="mb-3">
+              <label for="date_time" class="form-label">Select Appointment Time</label>
+              <input type="datetime-local" class="form-control" name="date_time">
+            </div>
+            <button type="submit" class="btn btn-success">Book Appointment</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+
+  {% endif %}
+{% endblock %}
+--------------------------------------------------
+# from flask import Flask
+# from flask_sqlalchemy import SQLAlchemy
+# from flask_migrate import Migrate
+# from flask_login import LoginManager
+
+# app = Flask(__name__)
+# app.config.from_object('config.Config')
+
+# db = SQLAlchemy(app)
+# migrate = Migrate(app, db)
+
+# login_manager = LoginManager()
+# login_manager.init_app(app)
+# login_manager.login_view = 'login'
+
+# from models import User, Barber, Appointment
+
+# # Register blueprints later if necessary
+# from routes import auth, scheduling
+
+# app.register_blueprint(auth, url_prefix='/auth')
+# app.register_blueprint(scheduling)
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
+# from flask import Flask
+# from flask_sqlalchemy import SQLAlchemy
+# from flask_migrate import Migrate
+# from flask_login import LoginManager
+# #from routes import auth, scheduling, main  # Import the main blueprint
+
+# app = Flask(__name__)
+# app.config.from_object('config.Config')
+
+# db = SQLAlchemy(app)  # db object here
+# migrate = Migrate(app, db)
+
+# login_manager = LoginManager()
+# login_manager.init_app(app)
+# login_manager.login_view = 'login'
+
+# from models import User, Barber, Appointment  # Correct import of models
+
+# # Register blueprints
+# from routes import auth, scheduling, main
+# app.register_blueprint(auth, url_prefix='/auth')
+# app.register_blueprint(scheduling)
+# app.register_blueprint(main)  # Register the main blueprint without a URL prefix
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
+--------------------------------------------------------------
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2 class="text-center">Welcome to your dashboard, {{ current_user.username }}!</h2>
+
+    {% if current_user.role == 'customer' %}
+      <h3 class="text-center mt-4">Available Barbers</h3>
+
+      <div class="row justify-content-center">
+        {% for barber in barbers %}
+          <div class="col-md-6">
+            <div class="card my-3">
+              <div class="card-body">
+                <h5 class="card-title">Barber: {{ barber.user.username }}</h5>
+
+                <form method="POST" action="{{ url_for('scheduling.book', barber_id=barber.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">  <!-- Manually add CSRF token -->
+                  <div class="mb-3">
+                    <label for="date_time" class="form-label">Select Appointment Time</label>
+                    <input type="datetime-local" class="form-control" name="date_time" required>
+                  </div>
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Book Appointment</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="col-md-6">
+            <div class="alert alert-info text-center">No barbers available at the moment.</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

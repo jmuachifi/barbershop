@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center">Welcome to your dashboard, {{ current_user.username }}!</h2>
+
+  <!-- Customer's dashboard -->
+  {% if current_user.role == 'customer' %}
+  <h3 class="text-center mt-4">Available Barbers</h3>
+
+  <div class="row justify-content-center">
+    {% for barber in barbers %}
+    <div class="col-md-6">
+      <div class="card my-3">
+        <div class="card-body">
+          <h5 class="card-title">Barber: {{ barber.user.username }}</h5>
+          <!-- Add more barber details -->
+          <p class="card-text">
+            <strong>Experience:</strong> {{ barber.experience or "N/A" }} years<br>
+            <strong>Ratings:</strong> ★★★★☆ (4.5/5) <!-- Placeholder for ratings -->
+          </p>
+
+          <!-- Form for booking appointment -->
+          <form method="POST" action="{{ url_for('scheduling.book', barber_id=barber.id) }}" class="book-appointment-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> <!-- Manually add CSRF token -->
+
+            <div class="mb-3">
+              <label for="date_time" class="form-label">Select Appointment Time</label>
+              <input type="datetime-local" class="form-control" name="date_time" required>
+            </div>
+
+            <!-- Book Appointment Button with confirmation modal trigger -->
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmModal{{ barber.id }}">
+              Book Appointment
+            </button>
+
+            <!-- Confirmation Modal -->
+            <div class="modal fade" id="confirmModal{{ barber.id }}" tabindex="-1"
+              aria-labelledby="confirmModalLabel{{ barber.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel{{ barber.id }}">Confirm Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    Are you sure you want to book an appointment with {{ barber.user.username }}?
+                    <br>
+                    <strong>Date and Time:</strong> <span class="selected-date-time"></span>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Confirm</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-md-6">
+      <div class="alert alert-info text-center">No barbers available at the moment.</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Barber's dashboard -->
+  {% elif current_user.role == 'barber' %}
+  <h3 class="text-center mt-4">Your Appointments</h3>
+
+  <ul class="list-group">
+    {% for appointment in appointments %}
+    <li class="list-group-item">
+      Appointment with {{ appointment.customer.username }} on {{ appointment.date_time }}
+    </li>
+    {% else %}
+    <li class="list-group-item text-center">You have no upcoming appointments.</li>
+    {% endfor %}
+  </ul>
+
+  {% endif %}
+</div>
+
+<!-- Loading Spinner (hidden by default) -->
+<div id="loading-spinner" class="d-none text-center">
+  <div class="spinner-border text-success" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+{% endblock %}
+
+
+<!-- Include the JavaScript for Modal and Spinner functionality -->
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Attach event listener to update the modal's date-time information before showing it
+    document.querySelectorAll('input[name="date_time"]').forEach(input => {
+      input.addEventListener('change', function () {
+        const selectedDateTime = this.value;
+        const modal = this.closest('form').querySelector('.selected-date-time');
+        modal.textContent = selectedDateTime;
+      });
+    });
+
+    // Show spinner on form submission
+    document.querySelectorAll('.book-appointment-form').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        document.getElementById('loading-spinner').classList.remove('d-none');
+      });
+    });
+  });
+</script>
+{% endblock %}

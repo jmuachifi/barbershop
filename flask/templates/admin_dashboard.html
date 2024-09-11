@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2 class="text-center">Admin Dashboard</h2>
+  
+  <h3>Users</h3>
+  <ul class="list-group">
+    {% for user in users %}
+      <li class="list-group-item">
+        {{ user.username }} ({{ user.role }})
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Barbers</h3>
+  <ul class="list-group">
+    {% for barber in barbers %}
+      <li class="list-group-item">
+        Barber: {{ barber.user.username }}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h3>Appointments</h3>
+  <ul class="list-group">
+    {% for appointment in appointments %}
+      <li class="list-group-item">
+        Appointment with {{ appointment.customer.username }} and {{ appointment.barber.user.username }} on {{ appointment.date_time }}
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
