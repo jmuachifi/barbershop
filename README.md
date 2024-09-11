@@ -28,8 +28,8 @@ Make sure you have the following installed:
 Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/your-username/barbershop-app.git
-cd barbershop-app
+git clone https://github.com/jmuachifi/barbershop-app.git
+cd barbershop-app/flask
 ```
 
 ### Set Up the Virtual Environment (Optional but Recommended)
