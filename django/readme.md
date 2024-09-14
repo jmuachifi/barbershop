@@ -1,7 +1,7 @@
 
-# Barbershop Scheduling App
+# Barbershop Scheduling App (Django Version)
 
-A simple scheduling platform for barbershops where customers can book appointments with barbers, and barbers can view their upcoming appointments.
+A scheduling platform for barbershops where customers can book appointments with barbers, and barbers can view their upcoming appointments.
 
 ## Features
 
@@ -18,10 +18,10 @@ A simple scheduling platform for barbershops where customers can book appointmen
 
 Make sure you have the following installed:
 
-- **Python 3.x** (Make sure to have the latest version)
+- **Python 3.x** (Latest version recommended)
 - **Pip** (Python's package manager)
-- **Virtualenv** (Optional, but recommended)
-- **Flask** and **Flask dependencies** (listed in `requirements.txt`)
+- **Virtualenv** (Optional but recommended)
+- **Django** and **Django dependencies** (listed in `requirements.txt`)
 
 ### Clone the Repository
 
@@ -29,7 +29,7 @@ Clone the repository to your local machine:
 
 ```bash
 git clone https://github.com/jmuachifi/barbershop-app.git
-cd barbershop-app/flask
+cd barbershop-app/django
 ```
 
 ### Set Up the Virtual Environment (Optional but Recommended)
@@ -51,56 +51,41 @@ pip install -r requirements.txt
 
 ### Configuration
 
-1. **Set the Flask environment variables**:
-   You can do this by setting environment variables or by creating a `.env` file with the following content:
+1. **Set up the environment variables**:
+   You can do this by creating a `.env` file with the following content:
 
    ```bash
-   FLASK_APP=app.py
-   FLASK_ENV=development
    SECRET_KEY=your_secret_key
+   DEBUG=True
    ```
 
 2. **Set Up the Database**:
-   - Initialize the SQLite database (or any other configured database):
+   - Apply the initial database migrations:
    
    ```bash
-   flask db init
-   flask db migrate
-   flask db upgrade
+   python manage.py migrate
    ```
 
    - This will create the necessary tables for your application.
 
-3. **Create an Admin User (Optional)**:
-   You can create an admin user manually by opening a Flask shell:
+3. **Create a Superuser**:
+   Create an admin user to access the Django admin panel:
 
    ```bash
-   flask shell
-   ```
-
-   Inside the shell, create the admin user:
-
-   ```python
-   from app import db
-   from models import User
-
-   admin = User(username="admin", email="admin@example.com", role="admin")
-   admin.set_password("adminpassword")
-   db.session.add(admin)
-   db.session.commit()
+   python manage.py createsuperuser
    ```
 
 ---
 
 ## Running the Application
 
-Run the Flask development server:
+Run the Django development server:
 
 ```bash
-flask run
+python manage.py runserver
 ```
 
-The application will be accessible at `http://127.0.0.1:5000/`.
+The application will be accessible at `http://127.0.0.1:8000/`.
 
 ---
 
@@ -108,7 +93,7 @@ The application will be accessible at `http://127.0.0.1:5000/`.
 
 To run tests, follow these steps:
 
-1. **Unit Testing**: Make sure to have a testing framework like `pytest` installed.
+1. **Unit Testing**: Make sure to have `pytest` installed for testing.
 2. **Run Tests**:
    
    ```bash
@@ -136,8 +121,8 @@ To run tests, follow these steps:
 4. **Set up the environment variables**:
    
    ```bash
-   heroku config:set FLASK_APP=app.py
    heroku config:set SECRET_KEY=your_secret_key
+   heroku config:set DEBUG=False
    ```
 
 5. **Add PostgreSQL database** (optional for production):
@@ -155,7 +140,7 @@ To run tests, follow these steps:
 7. **Run Database Migrations on Heroku**:
 
    ```bash
-   heroku run flask db upgrade
+   heroku run python manage.py migrate
    ```
 
 8. **Open the Application**:
